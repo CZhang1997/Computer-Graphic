@@ -37,22 +37,19 @@ public class Problem1_4 extends Frame{
         add("Center", new CanvasHexagons());
         setVisible(true);
     }
-
 }
-
-
 class CanvasHexagons extends Canvas {
 
     int maxX, maxY, minMaxXY, xCenter, yCenter;;
-
     private int radius;
 
     CanvasHexagons(){
         initGraphic();
         radius = 0;
         addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent evt) {
-                radius = (int)Math.sqrt(Math.pow(evt.getX(), 2) + Math.pow(evt.getY(), 2));
+            public void mousePressed(MouseEvent event) {
+                // get the radius from the mouse press event using distance formula from 0,0
+                radius = (int)Math.sqrt(Math.pow(event.getX(), 2) + Math.pow(event.getY(), 2));
                 repaint();
             }
         });
