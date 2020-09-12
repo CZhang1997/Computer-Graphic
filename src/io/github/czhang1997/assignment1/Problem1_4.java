@@ -21,6 +21,7 @@ import java.awt.event.WindowEvent;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Line2D;
 
 public class Problem1_4 extends Frame{
     public static void main(String[] args) {
@@ -28,7 +29,7 @@ public class Problem1_4 extends Frame{
     }
     Problem1_4()
     {
-        super("Concentric Squares(Straight Lines)");
+        super("Hexagons(click near left-upper corner)");
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {System.exit(0);}
         });
@@ -44,6 +45,18 @@ class CanvasHexagons extends Canvas {
 
     int maxX, maxY, minMaxXY, xCenter, yCenter;;
 
+    private int radius;
+
+    CanvasHexagons(){
+        initGraphic();
+        radius = 0;
+        addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent evt) {
+                radius = (int)Math.sqrt(Math.pow(evt.getX(), 2) + Math.pow(evt.getY(), 2));
+                repaint();
+            }
+        });
+    }
     void initGraphic() {
         Dimension d = getSize();
         maxX = d.width - 1; maxY = d.height - 1;
@@ -53,48 +66,73 @@ class CanvasHexagons extends Canvas {
     int iX(float x) {return Math.round(x);}
     int iY(float y) {return maxY - Math.round(y);}
 
-    void drawRect(Graphics g, float[] xList, float[] yList)
+    void drawHexagon(Graphics g)
     {
-        int size = xList.length;
-        for(int i = 0; i < xList.length; i ++)
-        {
-            int x1 = iX(xList[i%size]), y1 = iY(yList[i%size]);
-            int x2 = iX(xList[(i + 1)%size]), y2 = iY(yList[(i + 1)%size]);
-            g.drawLine(x1, y1, x2, y2);
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        float x = radius < 50 ? 50: radius;
+        float y = maxY - radius;
+        int degree = 60;
+        int yChange = (int)Math.round(Math.sin(Math.toRadians(degree)) * radius);
+        int xChange = (int)Math.round(Math.cos(Math.toRadians(degree)) * radius);
+        float hexagonDiameter = radius + 2 * xChange;
+        float yMarginBottom =  hexagonDiameter;
+        float xMarginRight = maxX - hexagonDiameter;
+        int lineOfHexagonDraw = 0;
+        while(y >yMarginBottom){
+            float topX = x;
+            boolean canDraw = topX < xMarginRight;
+            // draw the upper half of the hexagon
+            while(canDraw){
+                int X = iX(topX);
+                int Y = iY(y);
+                // draw the top line for the first row of hexagon
+                if(lineOfHexagonDraw == 0)
+                    g.drawLine(X,Y,X + radius,Y);
+
+                // draw the left top line
+                g.drawLine(X,Y,X - xChange,Y + yChange);
+                // draw the right top line
+                g.drawLine(X + radius,Y,X + radius + xChange,Y + yChange);
+                // if condition match, draw the center line
+                if(xMarginRight > X +  radius + hexagonDiameter)
+                    g.drawLine(X + radius + xChange,Y + yChange, X + 2* radius + xChange,Y + yChange);
+                // update the topX
+                topX = topX + 2 * radius + 2 * xChange;
+                canDraw = topX < xMarginRight;
             }
+            float botX = x;
+            y = y - (float)(2 * yChange);
+            // draw the lower part of the hexagon
+            while(botX < xMarginRight){
+                int X = iX(botX);
+                int Y = iY(y);
+                // draw the bottom line
+                g.drawLine(X,Y,X+ radius,Y);
+                // draw the left bottom line
+                g.drawLine(X,Y,X - xChange,Y - yChange);
+                // draw the right bottom line
+                g.drawLine(X + radius,Y,X + radius + xChange,Y - yChange);
+                botX = botX + 2 * radius + 2 * xChange;
+            }
+            lineOfHexagonDraw ++;
         }
     }
 
     public void paint(Graphics g) {
 
         initGraphic();
-        float side = 0.90F * minMaxXY;
-        float sideHalf = 0.5F * side;
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(5));
+        // draw the top left + sign
+        g2.draw(new Line2D.Float(10, 40, 30, 40));
+        g2.draw(new Line2D.Float(20, 30, 20, 50));
 
-        int size = 4;
-        float x = xCenter - sideHalf;
-        float y =  yCenter + sideHalf;
-        // define the initial position for each vertices
-        float[] xList = {x, x + side, x + side, x };
-        float[] yList = {y, y       , y - side, y - side };
-        for(int rect = 0; rect < 20; rect ++) {
+        String tips = "click any where on the top left corner to define the radius (distance from (0,0))";
 
-            drawRect(g, xList, yList);
-            float[] xListNew = new float[size];
-            float[] yListNew = new float[size];
-            for(int i = 0; i < xListNew.length; i ++){
-                xListNew[i] = (xList[i] + xList[(i + 1) % size])/ 2.0F;
-                yListNew[i] = (yList[i] + yList[(i +1) % size]) / 2.0F;
-            }
-            xList = xListNew;
-            yList = yListNew;
-        }
+        g2.setStroke(new BasicStroke(2));
+        if(radius != 0)
+            drawHexagon(g);
+        else
+            g.drawString(tips, 20, 20);
+
     }
-
-
-
 }
