@@ -48,16 +48,12 @@ class CanvasSquare extends Canvas {
     void drawRect(Graphics g, float[] xList, float[] yList)
     {
         int size = xList.length;
-        for(int i = 0; i < xList.length; i ++)
+        // draw 4 line using the 4 vertices
+        for(int i = 0; i < size; i ++)
         {
             int x1 = iX(xList[i%size]), y1 = iY(yList[i%size]);
             int x2 = iX(xList[(i + 1)%size]), y2 = iY(yList[(i + 1)%size]);
             g.drawLine(x1, y1, x2, y2);
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -74,27 +70,17 @@ class CanvasSquare extends Canvas {
         float[] xList = {x, x + side, x + side, x };
         float[] yList = {y, y       , y - side, y - side };
         for(int rect = 0; rect < 20; rect ++) {
-
+            // draw a rect
             drawRect(g, xList, yList);
-//            float f1 = (float)(Math.random() * 156.0F);
-//            float f2 = (float)(Math.random() * 100.0F);
-//            float f3 = (float)(Math.random() * 156.0F);
-//            g.setColor(Color.getHSBColor(f1,f2,f3));
-
             float[] xListNew = new float[size];
             float[] yListNew = new float[size];
+            // calculate the new vertices for the rectangle
             for(int i = 0; i < xListNew.length; i ++){
                 xListNew[i] = (xList[i] + xList[(i + 1) % size])/ 2.0F;
                 yListNew[i] = (yList[i] + yList[(i +1) % size]) / 2.0F;
             }
             xList = xListNew;
             yList = yListNew;
-
-//            try {
-//                Thread.sleep(300);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
         }
     }
 
