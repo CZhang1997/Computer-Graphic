@@ -32,7 +32,7 @@ public class Problem1_5 extends Frame{
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {System.exit(0);}
         });
-        setSize(500, 300);
+        setSize(360, 240);
         add("Center", new CanvasDashLine());
         setVisible(true);
     }
@@ -44,7 +44,9 @@ class CanvasDashLine extends Canvas {
 
     void initGraphic() {
         Dimension d = getSize();
+
         maxX = d.width - 1; maxY = d.height - 1;
+        System.out.println(maxX);
         minMaxXY = Math.min(maxX, maxY);
         xCenter = maxX / 2; yCenter = maxY / 2;
     }

@@ -38,7 +38,7 @@ public class Bresenham extends Frame {
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {System.exit(0);}
         });
-        setSize(500, 300);
+        setSize(360, 240);
         add("Center", new CanvasBresenham());
         setVisible(true);
     }
@@ -50,6 +50,8 @@ class CanvasBresenham extends Canvas {
     Point p1;
     Point p2;
     CanvasBresenham(){
+        Dimension d = getSize();
+        System.out.println(d.width);
         addMouseListener(new MouseAdapter() {
             // part 2: handle two input points from the mouse
             public void mousePressed(MouseEvent event) {
