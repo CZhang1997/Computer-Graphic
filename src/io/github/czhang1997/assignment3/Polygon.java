@@ -37,6 +37,10 @@ public class Polygon extends Frame {
 
     Polygon() {
         super("Point In Polygon");
+        MenuBar mBar = new MenuBar();
+        Menu mF = new Menu("File"); Menu mV = new Menu("View");
+        mBar.add(mF); mBar.add(mV);
+        setMenuBar(mBar);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
