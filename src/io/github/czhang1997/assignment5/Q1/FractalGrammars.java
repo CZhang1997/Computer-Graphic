@@ -10,8 +10,8 @@ public class FractalGrammars extends Frame {
 //        if (args.length == 0)
 //            System.out.println("Use filename as program argument.");
 //        else
-            new FractalGrammars("koch.txt");
-        new FractalGrammars("dragon.txt");
+        new FractalGrammars("koch.txt");
+//        new FractalGrammars("dragon.txt");
     }
 
     FractalGrammars(String fileName) {
@@ -36,7 +36,7 @@ class CvFractalGrammars extends Canvas {
     double xLast, yLast, dir, rotation, dirStart, fxStart, fyStart,
             lengthFract, reductFact;
 
-    Double xpoint, ypoint;
+    Double xBreak, yBreak;
 
     void error(String str) {
         System.out.println(str);
@@ -58,8 +58,10 @@ class CvFractalGrammars extends Canvas {
         strY = inp.readString();
         inp.skipRest();
 
-//      strU = inp.readString(); inp.skipRest();
-//      strV = inp.readString(); inp.skipRest();
+        strU = inp.readString();
+        inp.skipRest();
+        strV = inp.readString();
+        inp.skipRest();
 
         rotation = inp.readFloat();
         inp.skipRest();
@@ -97,16 +99,17 @@ class CvFractalGrammars extends Canvas {
         return (int) Math.round(maxY - y);
     }
 
-    void drawTo(Graphics g, double x, double y) {
-//        ((Graphics2D)g).setStroke(new BasicStroke((int)(Math.random() * 5 + 1)));
-        g.drawLine(iX(xLast), iY(yLast), iX(x), iY(y));
-        xLast = x;
-        yLast = y;
-        try {
-            Thread.sleep(5);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    void drawTo(Graphics g, double dx, double dy) {
+        double partial = 0.8;
+        double partial2 = 1 - partial;
+        xLast = xLast + dx * partial2;
+        yLast = yLast + dy * partial2;
+        g.drawLine(iX(xBreak), iY(yBreak), iX(xLast), iY(yLast));
+        xBreak = xLast + dx * partial;
+        yBreak = yLast + dy * partial;
+        g.drawLine(iX(xLast), iY(yLast), iX(xBreak), iY(yBreak));
+        xLast = xLast + dx;
+        yLast = yLast + dy;
     }
 
     void moveTo(Graphics g, double x, double y) {
@@ -120,38 +123,25 @@ class CvFractalGrammars extends Canvas {
         maxY = d.height - 1;
         xLast = fxStart * maxX;
         yLast = fyStart * maxY;
+        xBreak = xLast;
+        yBreak = yLast;
         dir = dirStart; // Initial direction in degrees
         turtleGraphics(g, axiom, level, lengthFract * maxY);
-//        if(xpoint != null){
-//
-//        }
     }
 
-//    String getStringPattern(String basic, int level){
-//        if(level == 0){
-//            return
-//        }
-//    }
 
     public void turtleGraphics(Graphics g, String instruction,
                                int depth, double len) {
         double xMark = 0, yMark = 0, dirMark = 0;
-        double partial = 0.8;
         for (int i = 0; i < instruction.length(); i++) {
             char ch = instruction.charAt(i);
             double rad = Math.PI / 180 * dir, // Degrees -> radians
                     dx = len * Math.pow(reductFact, depth) * Math.cos(rad), dy = len * Math.pow(reductFact, depth) * Math.sin(rad);
-            if ((i + 1 == instruction.length()) || ((instruction.charAt(i + 1) == '-' || instruction.charAt(i + 1) == '+') && instruction.charAt(i) == 'F')) {
-                xpoint = xLast + dx;
-                ypoint = yLast + dy;
-                dx *= partial;
-                dy *= partial;
-            }
             switch (ch) {
                 case 'F': // Step forward and draw
                     // Start: (xLast, yLast), direction: dir, steplength: len
                     if (depth == 0) {
-                            drawTo(g, xLast + dx, yLast + dy);
+                        drawTo(g, dx, dy);
                     } else
                         turtleGraphics(g, strF, depth - 1, reductFact * len);
                     break;
@@ -184,23 +174,9 @@ class CvFractalGrammars extends Canvas {
 
                 case '+': // Turn right
                     dir -= rotation;
-                    double rad2 = Math.PI / 180 * (dir), // Degrees -> radians
-                            dx2 = len * Math.pow(reductFact, depth) * Math.cos(rad2), dy2 = len* Math.pow(reductFact, depth) * Math.sin(rad2);
-                    double xp3 = xpoint + dx2 * (1 - partial);
-                    double yp3 = ypoint + dy2 * (1 - partial);
-                    if(i > 0 && instruction.charAt(i - 1) == 'F' && i != instruction.length() - 1){
-                        drawTo(g, xp3, yp3);
-                    }
                     break;
                 case '-':
                     dir += rotation;
-                    double rad3 = Math.PI / 180 * (dir), // Degrees -> radians
-                            dx3 = len * Math.pow(reductFact, depth) * Math.cos(rad3), dy3 = len * Math.pow(reductFact, depth) * Math.sin(rad3);
-                    double xp32 = xpoint + dx3 * (1 - partial);
-                    double yp32 = ypoint + dy3 * (1 - partial);
-                    if(i > 0 && instruction.charAt(i - 1) == 'F'&& i != instruction.length() - 1) {
-                        drawTo(g, xp32, yp32);
-                    }
                     break;
                 case '[': // Save position and direction
                     xMark = xLast;

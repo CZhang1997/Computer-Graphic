@@ -1,8 +1,10 @@
 "X"         // Axiom
 "FF"         // strF
 ""          // strf
-"F[+X]F[−-X]+X"     // strX
+"F[+X]F[-X]+X"     // strX
 ""     // strY
+""
+""
 20          // Angle of rotation
 90           // Initial direction of turtle (east)
 0.5         // Start at x = 0.5 * width

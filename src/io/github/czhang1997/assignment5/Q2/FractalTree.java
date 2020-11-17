@@ -11,13 +11,16 @@ package io.github.czhang1997.assignment5.Q2;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.Stack;
 
 public class FractalTree extends Frame {
     public static void main(String[] args) {
 //        if (args.length == 0)
 //            System.out.println("Use filename as program argument.");
 //        else
-            new FractalTree("dragon.txt");
+        new FractalTree("tree.txt");
     }
 
     FractalTree(String fileName) {
@@ -36,12 +39,14 @@ public class FractalTree extends Frame {
 class CvFractalGrammars extends Canvas {
     String fileName, axiom, strF, strf, strX, strY;
 
+    final int ANGLE_MARGIN = 20;
     String strU, strV;
 
-    int maxX, maxY, level = 1;
-    int stoke = 1;
+    int maxX, maxY, level = 4;
     double xLast, yLast, dir, rotation, dirStart, fxStart, fyStart,
             lengthFract, reductFact;
+    HashMap<Point, Double> map;
+    Stack<Double> stack;
 
     void error(String str) {
         System.out.println(str);
@@ -49,6 +54,8 @@ class CvFractalGrammars extends Canvas {
     }
 
     CvFractalGrammars(String fileName) {
+        map = new HashMap<>();
+        stack = new Stack<>();
         Input inp = new Input(fileName);
         if (inp.fails())
             error("Cannot open input file.");
@@ -63,8 +70,10 @@ class CvFractalGrammars extends Canvas {
         strY = inp.readString();
         inp.skipRest();
 
-//      strU = inp.readString(); inp.skipRest();
-//      strV = inp.readString(); inp.skipRest();
+        strU = inp.readString();
+        inp.skipRest();
+        strV = inp.readString();
+        inp.skipRest();
 
         rotation = inp.readFloat();
         inp.skipRest();
@@ -86,7 +95,6 @@ class CvFractalGrammars extends Canvas {
                     if (level < 1) level = 1;
                 } else
                     level++; // Left mouse button increases level
-//                stoke = level;
                 repaint();
             }
         });
@@ -104,21 +112,23 @@ class CvFractalGrammars extends Canvas {
     }
 
     void drawTo(Graphics g, double x, double y) {
-//        Graphics2D g2 = (Graphics2D)g;
-//        g2.setStroke(new BasicStroke(stoke*2));
-        g.drawLine(iX(xLast), iY(yLast), iX(x), iY(y));
 
-//        int tempX = xLast;
-//        int tempY = yLast;
-//        while(iX(tempX) < iX(x) && iY(tempY) > iY(y)){
-//            tempX += stoke;
-//        }
+        Graphics2D g2 = (Graphics2D) g;
+        int xD = iX(xLast);
+        int yD = iY(yLast);
+        double sWidth = map.getOrDefault(new Point(xD, yD), 1.0);
+        g2.setStroke(new BasicStroke((int) sWidth));
+        g.drawLine(xD, yD, iX(x), iY(y));
         xLast = x;
         yLast = y;
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        Point newP = new Point(iX(xLast), iY(yLast));
+        if (!map.containsKey(newP)) {
+            double newWidth = sWidth - 1;
+            if (newWidth <= 0) {
+                map.put(newP, 1.0);
+            } else {
+                map.put(newP, newWidth);
+            }
         }
     }
 
@@ -129,11 +139,14 @@ class CvFractalGrammars extends Canvas {
 
     public void paint(Graphics g) {
         Dimension d = getSize();
+        g.setColor(Color.gray);
         maxX = d.width - 1;
         maxY = d.height - 1;
         xLast = fxStart * maxX;
         yLast = fyStart * maxY;
         dir = dirStart; // Initial direction in degrees
+        map.clear();
+        map.put(new Point(iX(xLast), iY(yLast)), (double) (level * 8));
         turtleGraphics(g, axiom, level, lengthFract * maxY);
     }
 
@@ -151,7 +164,6 @@ class CvFractalGrammars extends Canvas {
                         drawTo(g, xLast + dx, yLast + dy);
                     } else {
                         turtleGraphics(g, strF, depth - 1, reductFact * len);
-
                     }
                     break;
                 case 'f': // Step forward without drawing
@@ -171,8 +183,6 @@ class CvFractalGrammars extends Canvas {
                     if (depth > 0)
                         turtleGraphics(g, strY, depth - 1, reductFact * len);
                     break;
-
-
                 case 'U':
                     if (depth > 0)
                         turtleGraphics(g, strU, depth - 1, reductFact * len);
@@ -184,22 +194,59 @@ class CvFractalGrammars extends Canvas {
 
 
                 case '+': // Turn right
-                    dir -= rotation;
+                    dir -= (rotation - ANGLE_MARGIN / 2 + Math.random() * ANGLE_MARGIN + 1);
                     break;
                 case '-': // Turn left
-                    dir += rotation;
+                    dir += (rotation - ANGLE_MARGIN / 2 + Math.random() * ANGLE_MARGIN + 1);
                     break;
                 case '[': // Save position and direction
                     xMark = xLast;
                     yMark = yLast;
                     dirMark = dir;
+                    Point pMain = new Point(iX(xLast), iY(yLast));
+                    double mainWidth = map.get(pMain);
+                    stack.push(mainWidth);
+                    map.put(pMain, mainWidth * 0.7);
                     break;
                 case ']': // Back to saved position and direction
                     xLast = xMark;
                     yLast = yMark;
                     dir = dirMark;
+                    Point pMain2 = new Point(iX(xLast), iY(yLast));
+                    double mainWidth2 = stack.pop();
+                    map.put(pMain2, mainWidth2);
                     break;
             }
         }
+        // draw the leaves
+        int leaveWidth = 10;
+        int leaveHeight = 8;
+        g.setColor(Color.green);
+        g.fillOval(iX(xLast) - (leaveWidth / 2), iY(yLast) - leaveHeight + 1, leaveWidth, leaveHeight);
+        g.setColor(Color.gray);
+    }
+}
+
+class Point {
+    int x;
+    int y;
+
+    Point(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Point point = (Point) o;
+        return x == point.x &&
+                y == point.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 }
