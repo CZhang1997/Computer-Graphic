@@ -20,7 +20,7 @@ public class FractalTree extends Frame {
 //        if (args.length == 0)
 //            System.out.println("Use filename as program argument.");
 //        else
-        new FractalTree("tree.txt");
+        new FractalTree("src/io/github/czhang1997/assignment5/Q2/tree.txt");
     }
 
     FractalTree(String fileName) {

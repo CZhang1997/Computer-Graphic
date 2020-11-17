@@ -10,7 +10,7 @@ public class FractalGrammars extends Frame {
 //        if (args.length == 0)
 //            System.out.println("Use filename as program argument.");
 //        else
-        new FractalGrammars("koch.txt");
+        new FractalGrammars("src/io/github/czhang1997/assignment5/Q1/koch.txt");
 //        new FractalGrammars("dragon.txt");
     }
 
